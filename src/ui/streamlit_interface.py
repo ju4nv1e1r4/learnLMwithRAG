@@ -3,7 +3,6 @@ from utils.config import LoadEnvVars
 import streamlit as st
 import dotenv
 import traceback
-import json
 
 dotenv.load_dotenv()
 
@@ -18,12 +17,12 @@ def get_context():
         context += f"{role}: {message['content']}\n"
     return context
 
-def start_rag(pdf_path):
+def start_rag(pdf_path, temperature=0.7, top_k=0.0, top_p=0.0):
     global rag_instance
     api_key = LoadEnvVars("GOOGLE_API_KEY")
     key = api_key.get_key()
     try:
-        rag_instance = RetrievalAugmentedGeneration(key, pdf_path)
+        rag_instance = RetrievalAugmentedGeneration(key, pdf_path, temperature, top_k, top_p)
         rag_instance.prepare_docs()
         _ = rag_instance.retriever()
         return True
@@ -69,12 +68,33 @@ def generate(user_input):
 
 def main():
     st.title("Chat com seu PDF")
+
+    temperature = st.selectbox(
+        "Temperature",
+        (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+        index=4,
+        placeholder="Defina o parâmetro temperature"
+    )
+
+    top_k = st.selectbox(
+        "Top K",
+        (10, 20, 30, 40, 50, 60, 70, 80, 90),
+        index=4,
+        placeholder="Defina o parâmetro top_k"
+    )
+
+    top_p = st.selectbox(
+        "Top P",
+        (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+        index=4,
+        placeholder="Defina o parâmetro top_p"
+    )
     
     pdf = st.file_uploader("Carregue um PDF", type="pdf")
     if pdf is not None:
         with open("temp.pdf", "wb") as f:
             f.write(pdf.read())
-        if start_rag("temp.pdf"):
+        if start_rag("temp.pdf", temperature, top_k, top_p):
             st.success("PDF carregado. Agora você pode conversar!")
     
     if "messages" not in st.session_state:
