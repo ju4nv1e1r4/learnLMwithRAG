@@ -67,28 +67,29 @@ def generate(user_input):
         return f"Ocorreu um erro ao consultar a LLM: {e}"
 
 def main():
-    st.title("Chat com seu PDF")
+    st.markdown("# Instrutor LLM com LearnLM :brain: :teacher:")
 
-    temperature = st.selectbox(
-        "Temperature",
-        (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
-        index=4,
-        placeholder="Defina o parâmetro temperature"
-    )
+    with st.sidebar:
+        temperature = st.selectbox(
+            "Temperature",
+            (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+            index=4,
+            placeholder="Defina o parâmetro temperature"
+        )
 
-    top_k = st.selectbox(
-        "Top K",
-        (10, 20, 30, 40, 50, 60, 70, 80, 90),
-        index=4,
-        placeholder="Defina o parâmetro top_k"
-    )
+        top_k = st.selectbox(
+            "Top K",
+            (10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100),
+            index=4,
+            placeholder="Defina o parâmetro top_k"
+        )
 
-    top_p = st.selectbox(
-        "Top P",
-        (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
-        index=4,
-        placeholder="Defina o parâmetro top_p"
-    )
+        top_p = st.selectbox(
+            "Top P",
+            (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
+            index=4,
+            placeholder="Defina o parâmetro top_p"
+        )
     
     pdf = st.file_uploader("Carregue um PDF", type="pdf")
     if pdf is not None:
