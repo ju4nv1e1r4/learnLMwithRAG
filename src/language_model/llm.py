@@ -1,5 +1,10 @@
 from langchain_google_genai import GoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 class LoadLLM():
     def __init__(self, model_name, api_key, temperature=0.7, top_k=0.0, top_p=0.0):
@@ -11,6 +16,9 @@ class LoadLLM():
         self.top_p = top_p
         
     def get_llm(self):
+        logging.info(f"Temperature: {self.temperature}")
+        logging.info(f"Top K: {self.top_k}")
+        logging.info(f"Top P: {self.top_p}")
         if self._llm_instance is None:
             self._llm_instance = GoogleGenerativeAI(
                 model=self.model_name,
