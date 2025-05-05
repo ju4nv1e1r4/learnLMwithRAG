@@ -2,16 +2,22 @@ from langchain_google_genai import GoogleGenerativeAI
 from langchain.prompts import ChatPromptTemplate
 
 class LoadLLM():
-    def __init__(self, model_name, api_key):
+    def __init__(self, model_name, api_key, temperature=0.7, top_k=0.0, top_p=0.0):
         self.model_name = model_name
         self.api_key = api_key
         self._llm_instance = None
+        self.temperature = temperature
+        self.top_k = top_k
+        self.top_p = top_p
         
     def get_llm(self):
         if self._llm_instance is None:
             self._llm_instance = GoogleGenerativeAI(
                 model=self.model_name,
-                google_api_key=self.api_key
+                google_api_key=self.api_key,
+                temperature=self.temperature,
+                top_k=self.top_k,
+                top_p=self.top_p
             )
         return self._llm_instance
     

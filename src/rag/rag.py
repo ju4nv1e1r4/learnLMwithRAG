@@ -2,19 +2,19 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.runnables import RunnablePassthrough, RunnableLambda
-# ---
-from utils.config import LoadEnvVars
 from utils.load import LoadFile
 from src.language_model.llm import LoadLLM
 
 class RetrievalAugmentedGeneration:
-    def __init__(self, api_key: str, pdf):
+    def __init__(self, api_key: str, pdf, temperature, top_k, top_p):
         self.key = api_key
         self.pdf = pdf
         self.load_model = LoadLLM(
             model_name="learnlm-2.0-flash-experimental",
-            api_key=api_key
+            api_key=api_key,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p
         )
         self.model = self.load_model.get_llm()
         self.prompt = self.load_model.prompt()
