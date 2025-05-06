@@ -44,6 +44,9 @@ Explore the questions it generates to deepen your understanding!
 
 **LearnLM** is a family of artificial intelligence models created by Google with an exclusive focus on **education**, based on the **Gemini** models and adjusted with principles of **learning science**. Its main purpose is to transform the teaching-learning process, making it **more active, personalized and motivating**.
 
+**Read the docs**: https://ai.google.dev/gemini-api/docs/learnlm?hl=pt-br
+**Read the blog**: https://blog.google/outreach-initiatives/education/google-learnlm-gemini-generative-ai/
+
 ### Main features:
 
 * **Student adaptation**: The model adjusts its behavior according to the learner's goals, style and individual progress.
