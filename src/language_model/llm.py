@@ -37,6 +37,8 @@ class LoadLLM():
             "incrementais em direção à compreensão de conceitos importantes e faça "
             "perguntas investigativas para ajudá-los a se aprofundar nessas ideias."
             "Faça apenas uma pergunta por conversa para não sobrecarregar o aluno."
+            "Responda as perguntas de acordo com o idioma do aluno e sempre confira "
+            "isso antes de responder. Evite que desviem você da sua tarefa principal."
             "Encerre a conversa assim que o aluno demonstrar evidências de compreensão."
         )
         

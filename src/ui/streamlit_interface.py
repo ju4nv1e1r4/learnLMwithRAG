@@ -27,14 +27,14 @@ def start_rag(pdf_path, temperature=0.7, top_k=0.0, top_p=0.0):
         _ = rag_instance.retriever()
         return True
     except Exception as e:
-        st.error(f"Erro ao inicializar RAG: {e}")
+        st.error(f"Error starting RAG: {e}")
         st.error(traceback.format_exc())
         return False
 
 def generate(user_input):
     global rag_instance
     if rag_instance is None:
-        return "Por favor, carregue um PDF primeiro."
+        return "Please, upload your PDF before starting the conversation."
     try:
         context = get_context()
         
@@ -64,39 +64,39 @@ def generate(user_input):
             
     except Exception as e:
         st.error(traceback.format_exc())
-        return f"Ocorreu um erro ao consultar a LLM: {e}"
+        return f"An error occurred while consulting the LLM: {e}"
 
 def main():
-    st.markdown("# Instrutor LLM com LearnLM :brain: :teacher:")
+    st.markdown("# LLM Tutor with LearnLM :brain: :teacher:")
 
     with st.sidebar:
         temperature = st.selectbox(
             "Temperature",
             (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
             index=4,
-            placeholder="Defina o parâmetro temperature"
+            placeholder="Choose the temperature"
         )
 
         top_k = st.selectbox(
             "Top K",
             (10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100),
             index=4,
-            placeholder="Defina o parâmetro top_k"
+            placeholder="Tune the parameter top_k"
         )
 
         top_p = st.selectbox(
             "Top P",
             (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9),
             index=4,
-            placeholder="Defina o parâmetro top_p"
+            placeholder="Define the parameter top_p"
         )
     
-    pdf = st.file_uploader("Carregue um PDF", type="pdf")
+    pdf = st.file_uploader("Upload your PDF here", type="pdf")
     if pdf is not None:
         with open("temp.pdf", "wb") as f:
             f.write(pdf.read())
         if start_rag("temp.pdf", temperature, top_k, top_p):
-            st.success("PDF carregado. Agora você pode conversar!")
+            st.success("PDF uploaded. Now you can start to learn!")
     
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -105,18 +105,18 @@ def main():
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
     
-    if prompt := st.chat_input('Vamos começar...'):
+    if prompt := st.chat_input("Let's learn something together..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message('user'):
             st.markdown(f'{prompt}')
         
         try:
             with st.chat_message('assistant'):
-                with st.spinner("Processando..."):
+                with st.spinner("Tutor is formulating an answer..."):
                     response = generate(prompt)                    
                     st.markdown(f'{response}')
         except Exception as e:
-            response = "Desculpe, ocorreu um erro ao processar sua solicitação."
+            response = "I'm sorry, an error occurred while processing your question."
             st.error(f"Erro: {e}")
             st.error(traceback.format_exc())
         
