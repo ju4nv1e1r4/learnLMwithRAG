@@ -5,7 +5,6 @@ from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from src.language_model.llm import LoadLLM
-from utils.load import LoadFile
 
 
 class DocumentManager:
@@ -20,7 +19,7 @@ class DocumentManager:
         return base
 
     def prepare_docs(self):
-        docs = LoadFile(self.pdf_path).load_pdf()
+        docs = self.load_pdf()
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=1200,
             chunk_overlap=200,

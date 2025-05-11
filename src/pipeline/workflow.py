@@ -27,13 +27,15 @@ class RunPipeline:
     def start_rag(self, pdf_path, temperature=0.7, top_k=0.0, top_p=0.0):
         api_key = LoadEnvVars("GOOGLE_API_KEY")
         key = api_key.get_key()
+
         try:
             self.rag_instance = RetrievalAugmentedGeneration(
-                key, pdf_path, temperature, top_k, top_p
+                key, pdf_path, temperature=temperature, top_k=top_k, top_p=top_p
             )
+
             self.rag_instance.prepare_docs()
             _ = self.rag_instance.retriever()
-            _ = self.rag_instance.retriever()
+
             return True
         except Exception as e:
             st.error(f"Error starting RAG: {e}")
@@ -43,24 +45,23 @@ class RunPipeline:
     def generate(self, user_input, with_debug_mode=False):
         if self.rag_instance is None:
             return "Please, upload your PDF before starting the conversation."
+
         try:
             context = self.get_context()
-
             input_dict = {"context": context, "question": user_input}
-
-            rag = self.rag_instance.chain()
-
-            response = rag.invoke(input_dict)
 
             if with_debug_mode:
                 # DEBUG: Mostrar o que estamos enviando
                 st.write("Enviando para a cadeia RAG:")
                 st.write(input_dict)
+
+            rag = self.rag_instance.chain()
+            response = rag.invoke(input_dict)
+
+            if with_debug_mode:
                 # DEBUG: Mostrar a resposta bruta
                 st.write("Resposta bruta da cadeia RAG:")
                 st.write(response)
-            else:
-                pass
 
             if isinstance(response, str):
                 return response
