@@ -1,12 +1,22 @@
-substitutions:
-  IMAGE_TAG_STREAMLIT_UI: gcr.io/$PROJECT_ID/learlmtutor
-  
+# This Cloud Build configuration file builds a Docker image for a Streamlit UI application.
+# It uses the Docker builder to build the image and tags it with the specified image tag.
+# The image is built using the Dockerfile located in the current directory.
+# The image is tagged with the value of the IMAGE_TAG_STREAMLIT_UI variable.
+# The IMAGE_TAG_STREAMLIT_UI variable is set to the value of the IMAGE_TAG_STREAMLIT_UI secret.
+# The secrets are passed to the build as build arguments.
+# The build arguments are used to set the PROJECT_ID and SERVICE_NAME environment variables in the Dockerfile.
+# The build will be triggered by a push to the main branch of the repository.
+# The build will use the latest version of the Docker builder.
+
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-f', 'Dockerfile', '-t', '${IMAGE_TAG_STREAMLIT_UI}', '.']
-
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '${IMAGE_TAG_STREAMLIT_UI}']
+    args: [
+      'build',
+      '--build-arg', 'GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}',
+      '--build-arg', 'SERVICE_NAME=${{ secrets.SERVICE_NAME }}',
+      '-t', '${IMAGE_TAG_STREAMLIT_UI}',
+      '.'
+    ]
 
 images:
   - '${IMAGE_TAG_STREAMLIT_UI}'
