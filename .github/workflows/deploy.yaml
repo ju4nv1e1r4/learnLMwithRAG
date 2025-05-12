@@ -2,9 +2,9 @@ name: Build and Deploy LearnLM Tutor
 
 on:
   pull_request:
-    branches: [prod]
+    branches: [main]
   push:
-    branches: [prod]
+    branches: [main]
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
