@@ -1,0 +1,12 @@
+substitutions:
+  IMAGE_TAG_STREAMLIT_UI: gcr.io/$PROJECT_ID/learlmtutor
+  
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-f', 'Dockerfile', '-t', '${IMAGE_TAG_STREAMLIT_UI}', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${IMAGE_TAG_STREAMLIT_UI}']
+
+images:
+  - '${IMAGE_TAG_STREAMLIT_UI}'
