@@ -2,9 +2,9 @@ name: Build and Deploy LearnLM Tutor
 
 on:
   pull_request:
-    branches: [main]
+    branches: [prod] # now working, for while
   push:
-    branches: [main]
+    branches: [prod] # now working, for while
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
