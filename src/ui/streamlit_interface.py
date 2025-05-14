@@ -4,7 +4,7 @@ from datetime import datetime
 import streamlit as st
 
 from src.pipeline.workflow import RunPipeline
-from utils.monitoring import ConversationMonitor
+from utils.monitoring import ConversationLogManager
 
 
 def main():
@@ -61,6 +61,7 @@ def main():
 
     run = RunPipeline(context_control=context_control)
     memory = run.SHORT_TERM_MEMORY
+    MANAGER_STATE_KEY = "conversation_log_manager"
 
     pdf = st.file_uploader("Upload your PDF here", type="pdf")
     if pdf is not None:
@@ -69,9 +70,11 @@ def main():
         if run.start_rag("temp.pdf", temperature, top_k, top_p):
             st.success("PDF uploaded. Now you can start to learn!")
 
-    if "conversation_monitor" not in st.session_state:
+    if MANAGER_STATE_KEY not in st.session_state:
         conversation_id = datetime.now().strftime("%Y%m%d%H%M%S")
-        st.session_state.conversation_monitor = ConversationMonitor(conversation_id)
+        st.session_state[MANAGER_STATE_KEY] = ConversationLogManager(conversation_id)
+
+    log_manager: ConversationLogManager = st.session_state[MANAGER_STATE_KEY]
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -90,10 +93,8 @@ def main():
                 with st.spinner("Tutor is formulating an answer..."):
                     response = run.generate(prompt)
                     st.markdown(f"{response}")
-                    st.session_state.conversation_monitor.add_turn(
-                        str(prompt), str(response)
-                    )
-                    st.session_state.conversation_monitor.export_conversation()
+                    log_manager.add_turn(str(prompt), str(response))
+                    log_manager.export_conversation()
         except Exception as e:
             response = "I'm sorry, an error occurred while processing your question."
             st.error(f"Erro: {e}")
