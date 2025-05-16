@@ -1,3 +1,25 @@
+[project]
+name = "rag-assistant"
+version = "0.1.0"
+
+dependencies = [
+    "streamlit",
+    "langchain_google_genai",
+    "langchain",
+    "logging",
+    "langchain_community",
+    "datetime",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "taskipy"
+]
+
+[tool.taskipy.tasks]
+ui = "PYTHONPATH=. uv run streamlit run src/ui/streamlit_interface.py"
+
 [tool.black]
 line-length = 88
 
