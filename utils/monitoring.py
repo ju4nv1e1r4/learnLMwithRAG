@@ -21,7 +21,7 @@ class ConversationMonitor:
         os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
         try:
             with open(self.file_path, "w", encoding="utf-8") as f:
-                json.dump(self.sessions, f, indent=4)
+                json.dump(self.sessions, f, indent=4, ensure_ascii=False)
         except Exception as e:
             print(f"Error writing conversation to {self.file_path}: {e}")
 
