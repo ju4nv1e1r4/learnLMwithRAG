@@ -10,6 +10,8 @@ dependencies = [
     "langchain_community",
     "datetime",
     "python-dotenv",
+    "pypdf",
+    "faiss-cpu"
 ]
 
 [project.optional-dependencies]
