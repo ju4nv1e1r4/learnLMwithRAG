@@ -9,6 +9,8 @@ COPY ./src/ /app/src/
 COPY ./data/ /app/data/
 COPY ./utils/ /app/utils/
 
+ENV PYTHONPATH="${PYTHONPATH}:/app"
+
 EXPOSE 8080
 
 CMD ["streamlit", "run", "src/ui/streamlit_interface.py", "--server.port=8080", "--server.address=0.0.0.0"]
