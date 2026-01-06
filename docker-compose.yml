@@ -1,0 +1,9 @@
+services:
+  user_interface:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - PYTHONPATH=/app
