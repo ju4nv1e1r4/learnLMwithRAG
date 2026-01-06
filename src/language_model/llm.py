@@ -56,7 +56,6 @@ class LoadLLM:
             "isso antes de responder. Evite que desviem você da sua tarefa principal."
             "Encerre a conversa assim que o aluno demonstrar evidências de compreensão."
         )
-        RAGTracker.log_prompt(system_prompt)
 
         return ChatPromptTemplate.from_messages(
             [
