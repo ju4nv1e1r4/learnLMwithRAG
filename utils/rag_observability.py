@@ -82,7 +82,13 @@ def monitor_trace(model_name="default_model"):
             RAGTracker.start_trace(model_name=model_name)
 
             try:
-                if args: RAGTracker.log_input("arg_0", args[0])
+                start_idx = 0
+                if args and hasattr(args[0], func.__name__):
+                    start_idx = 1
+
+                for i, arg in enumerate(args[start_idx:], start=start_idx):
+                    RAGTracker.log_input(f"arg_{i}", arg)
+
                 for k, v in kwargs.items():
                     RAGTracker.log_input(k, v)
             except:
