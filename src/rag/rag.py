@@ -1,4 +1,5 @@
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.runnables import RunnableLambda
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_community.vectorstores import FAISS
@@ -63,7 +64,7 @@ class RetrievalAugmentedGeneration:
         self.key = api_key
         self.pdf_path = pdf_path
         self.load_model = LoadLLM(
-            model_name="learnlm-2.0-flash-experimental",
+            model_name="gemini-2.0-flash-lite",
             api_key=api_key,
             temperature=temperature,
             top_k=top_k,
@@ -94,25 +95,25 @@ class RetrievalAugmentedGeneration:
             return retriever.get_relevant_documents(query)
 
         def get_docs_with_logging(query):
-            from langchain.schema import Document
-            docs = [
-                Document(page_content="O aprendizado supervisionado usa dados rotulados.", metadata={"page": 10}),
-                Document(page_content="Redes neurais são inspiradas no cérebro.", metadata={"page": 12})
-            ]
+            retriever = self.retriever()
+            docs = retriever.get_relevant_documents(query)
 
             for doc in docs:
                 RAGTracker.log_retrieval(
                     content=doc.page_content,
-                    source=str(doc.metadata.get('page', 'unknown')),
-                    score=0.0 # Se o FAISS der score, coloque aqui
+                source=f"{doc.metadata.get('source', 'unknown')} (Page {doc.metadata.get('page', '?')})",
+                score=doc.metadata.get('score', 0.0)
                 )
             return docs
 
-        rag_chain = {
-            "question": lambda x: x["question"],
-            "context": lambda x: x["context"],
-            "context_docs": lambda x: get_docs_with_logging(x["question"]),
-        } | create_stuff_documents_chain(
+        def prepare_inputs(x):
+            return {
+                "question": x["question"],
+                "context": x["context"],
+                "context_docs": get_docs_with_logging(x["question"]),
+            }
+
+        rag_chain = RunnableLambda(prepare_inputs) | create_stuff_documents_chain(
             llm=self.model, prompt=self.prompt, document_variable_name="context_docs"
         )
 
