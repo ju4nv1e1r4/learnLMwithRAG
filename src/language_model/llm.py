@@ -1,7 +1,8 @@
 import logging
-
 from langchain.prompts import ChatPromptTemplate
 from langchain_google_genai import GoogleGenerativeAI
+
+from utils.rag_observability import RAGTracker, monitor_trace
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -29,6 +30,18 @@ class LoadLLM:
                 top_k=self.top_k,
                 top_p=self.top_p,
             )
+            RAGTracker.log_input(
+                key="temperature",
+                value=self.temperature,
+            )
+            RAGTracker.log_input(
+                key="top_k",
+                value=self.top_k,
+            )
+            RAGTracker.log_input(
+                key="top_p",
+                value=self.top_p,
+            )
         return self._llm_instance
 
     def prompt(self):
@@ -43,6 +56,7 @@ class LoadLLM:
             "isso antes de responder. Evite que desviem você da sua tarefa principal."
             "Encerre a conversa assim que o aluno demonstrar evidências de compreensão."
         )
+        RAGTracker.log_prompt(system_prompt)
 
         return ChatPromptTemplate.from_messages(
             [

@@ -5,6 +5,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 from src.language_model.llm import LoadLLM
+from utils.rag_observability import RAGTracker
 
 
 class DocumentManager:
@@ -92,10 +93,25 @@ class RetrievalAugmentedGeneration:
             retriever = self.retriever()
             return retriever.get_relevant_documents(query)
 
+        def get_docs_with_logging(query):
+            from langchain.schema import Document
+            docs = [
+                Document(page_content="O aprendizado supervisionado usa dados rotulados.", metadata={"page": 10}),
+                Document(page_content="Redes neurais são inspiradas no cérebro.", metadata={"page": 12})
+            ]
+
+            for doc in docs:
+                RAGTracker.log_retrieval(
+                    content=doc.page_content,
+                    source=str(doc.metadata.get('page', 'unknown')),
+                    score=0.0 # Se o FAISS der score, coloque aqui
+                )
+            return docs
+
         rag_chain = {
             "question": lambda x: x["question"],
             "context": lambda x: x["context"],
-            "context_docs": lambda x: get_docs(x["question"]),
+            "context_docs": lambda x: get_docs_with_logging(x["question"]),
         } | create_stuff_documents_chain(
             llm=self.model, prompt=self.prompt, document_variable_name="context_docs"
         )

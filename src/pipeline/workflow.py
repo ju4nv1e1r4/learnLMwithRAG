@@ -5,6 +5,7 @@ import streamlit as st
 
 from src.rag.rag import RetrievalAugmentedGeneration
 from utils.config import LoadEnvVars
+from utils.rag_observability import monitor_trace
 
 dotenv.load_dotenv()
 
@@ -42,6 +43,7 @@ class RunPipeline:
             st.error(traceback.format_exc())
             return False
 
+    @monitor_trace(model_name="learnlm-2.0-flash-experimental")
     def generate(self, user_input, with_debug_mode=False):
         if self.rag_instance is None:
             return "Please, upload your PDF before starting the conversation."
