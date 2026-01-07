@@ -1,0 +1,129 @@
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.runnables import RunnableLambda
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import OllamaEmbeddings
+
+from src.language_model.local_llm import LoadLLM
+from utils.rag_observability import RAGTracker
+
+
+class DocumentManager:
+    def __init__(self, pdf_path):
+        self.pdf_path = pdf_path
+
+    def load_pdf(self):
+        loader = [PyPDFLoader(self.pdf_path)]
+        base = []
+        for doc in loader:
+            base.extend(doc.load())
+        return base
+
+    def prepare_docs(self):
+        docs = self.load_pdf()
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1200,
+            chunk_overlap=200,
+            separators=["\n\n", "\n", ".", "!", "?", ",", " ", ""],
+        )
+        splitted_docs = text_splitter.split_documents(docs)
+        return splitted_docs
+
+
+class EmbeddingManager:
+    def __init__(
+        self,
+        base_url="http://ollama:11434",
+        model="embeddinggemma:300m-qat-q4_0"
+    ):
+        self.base_url = base_url
+        self.model = model
+        self._vector_store = None
+
+    def get_embeddings(self):
+        return OllamaEmbeddings(
+            model=self.model,
+            base_url=self.base_url,
+        )
+
+    def create_vector_store(self, documents):
+        embeddings = self.get_embeddings()
+        self._vector_store = FAISS.from_documents(
+            documents=documents, embedding=embeddings
+        )
+        return self._vector_store
+
+    def get_retriever(self, vector_store=None):
+        if vector_store:
+            return vector_store.as_retriever()
+        elif self._vector_store:
+            return self._vector_store.as_retriever()
+        else:
+            raise ValueError(
+                "Vector store not initialized. Call create_vector_store first."
+            )
+
+
+class RetrievalAugmentedGeneration:
+    def __init__(
+        self,
+        pdf_path,
+        base_url="http://ollama:11434",
+        temperature=0.7,
+        top_k=0,
+        top_p=0.0,
+    ):
+        self.pdf_path = pdf_path
+        self.base_url = base_url
+        self.load_model = LoadLLM(
+            model_name="gemma2:2b",
+            base_url=base_url,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+        )
+        self.model = self.load_model.get_llm()
+        self.prompt = self.load_model.prompt()
+        self._retriever_instance = None
+
+        self.doc_manager = DocumentManager(pdf_path)
+        self.embedding_manager = EmbeddingManager(base_url=base_url)
+
+    def prepare_docs(self):
+        return self.doc_manager.prepare_docs()
+
+    def retriever(self):
+        if self._retriever_instance is None:
+            docs = self.prepare_docs()
+            vector_store = self.embedding_manager.create_vector_store(docs)
+            self._retriever_instance = self.embedding_manager.get_retriever(
+                vector_store
+            )
+        return self._retriever_instance
+
+    def chain(self):
+        def get_docs_with_logging(query):
+            retriever = self.retriever()
+            docs = retriever.get_relevant_documents(query)
+
+            for doc in docs:
+                RAGTracker.log_retrieval(
+                    content=doc.page_content,
+                    source=f"{doc.metadata.get('source', 'unknown')} (Page {doc.metadata.get('page', '?')})",
+                    score=doc.metadata.get('score', 0.0),
+                )
+            return docs
+
+        def prepare_inputs(x):
+            return {
+                "question": x["question"],
+                "context": x["context"],
+                "context_docs": get_docs_with_logging(x["question"]),
+            }
+
+        rag_chain = RunnableLambda(prepare_inputs) | create_stuff_documents_chain(
+            llm=self.model, prompt=self.prompt, document_variable_name="context_docs"
+        )
+
+        return rag_chain
