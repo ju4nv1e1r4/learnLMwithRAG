@@ -9,7 +9,7 @@ services:
       - PYTHONPATH=/app
       - OLLAMA_HOST=http://ollama:11434
       - LLM_PROVIDER=LOCAL
-    depends-on:
+    depends_on:
       - ollama
   ollama:
     image: ollama/ollama:latest
