@@ -7,3 +7,20 @@ services:
       - .env
     environment:
       - PYTHONPATH=/app
+      - OLLAMA_HOST=http://ollama:11434
+      - LLM_PROVIDER=LOCAL
+    depends-on:
+      - ollama
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
+    restart: always
+
+volumes:
+  ollama_storage:
+
+#
